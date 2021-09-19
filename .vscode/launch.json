@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/main.go",
             "env": {
                 "RPCServer_CluserName": "awesome_pine",
-                "RPCServer_ID": "Connector-0",
+                "RPCRPCServer_ID": "Connector-0",
                 "RPCServer_Kind": "connector",
                 "RPCServer_Host": "127.0.0.1",
                 "RPCServer_Port": 3014,
@@ -68,14 +68,14 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "env": {
-                "Server_SystemName": "awesome_pine",
-                "Server_ID": "Ddz-0",
-                "Server_Kind": "Ddz",
-                "Server_Host": "127.0.0.1",
-                "Server_Port": 3114,
-                "Server_Token": "ksYNdrAo",
-                "Server_LogType": "Console",
-                "Server_LogLevel": "Debug",
+                "RPCServer_CluserName": "awesome_pine",
+                "RPCServer_ID": "Ddz-0",
+                "RPCServer_Kind": "Ddz",
+                "RPCServer_Host": "127.0.0.1",
+                "RPCServer_Port": 3114,
+                "RPCServer_Token": "ksYNdrAo",
+                "LogType": "Console",
+                "LogLevel": "Debug",
                 "Zookeeper_Host": "127.0.0.1",
                 "Zookeeper_Port": 2181,
             },
@@ -89,14 +89,14 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "env": {
-                "Server_SystemName": "awesome_pine",
-                "Server_ID": "Qznn-0",
-                "Server_Kind": "Qznn",
-                "Server_Host": "127.0.0.1",
-                "Server_Port": 3214,
-                "Server_Token": "ksYNdrAo",
-                "Server_LogType": "Console",
-                "Server_LogLevel": "Debug",
+                "RPCServer_CluserName": "awesome_pine",
+                "RPCServer_ID": "Qznn-0",
+                "RPCServer_Kind": "Qznn",
+                "RPCServer_Host": "127.0.0.1",
+                "RPCServer_Port": 3214,
+                "RPCServer_Token": "ksYNdrAo",
+                "LogType": "Console",
+                "LogLevel": "Debug",
                 "Zookeeper_Host": "127.0.0.1",
                 "Zookeeper_Port": 2181,
             },
@@ -110,6 +110,15 @@
             "program": "${workspaceFolder}/test/test.go",
             "env": {},
             "args": []
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Cluster",
+            "configurations": [
+                "Connector",
+                "Ddz"
+            ]
         }
     ]
 }

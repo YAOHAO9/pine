@@ -1,5 +1,5 @@
 import Pine from 'pine-client'
-import { BasePine, Middleware } from 'pine-client/lib/common'
+import { Middleware } from 'pine-client/lib/common'
 
 (async () => {
 
@@ -11,7 +11,7 @@ import { BasePine, Middleware } from 'pine-client/lib/common'
         console.warn('connector.onMsg', data)
     })
 
-    BasePine.ReqTimeOut = 10 * 1000
+    Pine.ReqTimeOut = 10 * 1000
 
     const requestDataJSON = { Name: 'JSON request', hahahahah: 18 }
 

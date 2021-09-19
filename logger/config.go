@@ -66,12 +66,19 @@ type CustomError struct {
 }
 
 // 实现error接口
-func (err CustomError) Error() string {
+func (err *CustomError) Error() string {
 	return err.msg
 }
 
 // NewError
 func NewError(args ...interface{}) error {
+
+	if len(args) == 1  {
+		if customError, ok := args[0].(*CustomError); ok {
+			return customError
+		}
+	}
+
 	frames := stack.Callers(1)
 
 	if logType == LogTypeEnum.Console {
@@ -84,7 +91,6 @@ func NewError(args ...interface{}) error {
 
 	entry := std.WithError(errors.New(msg))
 	entry.Data["RealStack"] = frames
-
 	return &CustomError{
 		msg:   msg,
 		Entry: entry,
@@ -93,7 +99,7 @@ func NewError(args ...interface{}) error {
 
 // Panic
 func Panic(args ...interface{}) {
-	if len(args) == 0 {
+	if len(args) == 1 {
 		if customError, ok := args[0].(*CustomError); ok {
 			customError.Entry.Error()
 			return
@@ -105,8 +111,8 @@ func Panic(args ...interface{}) {
 // Error
 func Error(args ...interface{}) {
 	if len(args) == 1 {
-		if entry, ok := args[0].(*logrus.Entry); ok {
-			entry.Error()
+		if customError, ok := args[0].(*CustomError); ok {
+			customError.Entry.Error()
 			return
 		}
 	}

@@ -101,11 +101,9 @@ func (f errorFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	if hasRealStack {
 		// real stack
-		b.WriteString(fmt.Sprint("\nReal Call stack:\n", realStack))
+		b.WriteString(fmt.Sprint("\nCall stack:\n", realStack))
 		b.WriteString("\x1b[0m\n")
-	}
-
-	if hasStack {
+	} else if hasStack {
 		// stack
 		b.WriteString(fmt.Sprint("\nCall stack:\n", stack))
 		b.WriteString("\x1b[0m\n")

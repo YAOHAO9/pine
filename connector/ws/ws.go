@@ -42,7 +42,7 @@ func (ws *WsConnector) Start() {
 		// 断开连接自动清除连接信息
 		conn.SetCloseHandler(func(code int, text string) error {
 			conn.Close()
-			logger.Warn("code:", code, "msg:", text)
+			logger.Warn("code:", code, ", msg:", text)
 			return nil
 		})
 
