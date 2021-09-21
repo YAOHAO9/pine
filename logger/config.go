@@ -61,19 +61,20 @@ func SetLogMode(logTyp string) {
 
 // 自定义的错误
 type CustomError struct {
-	msg string
+	Msg  string
+	Args []interface{}
 	*logrus.Entry
 }
 
 // 实现error接口
 func (err *CustomError) Error() string {
-	return err.msg
+	return err.Msg
 }
 
 // NewError
 func NewError(args ...interface{}) error {
 
-	if len(args) == 1  {
+	if len(args) == 1 {
 		if customError, ok := args[0].(*CustomError); ok {
 			return customError
 		}
@@ -92,7 +93,8 @@ func NewError(args ...interface{}) error {
 	entry := std.WithError(errors.New(msg))
 	entry.Data["RealStack"] = frames
 	return &CustomError{
-		msg:   msg,
+		Msg:   msg,
+		Args:  args,
 		Entry: entry,
 	}
 }
