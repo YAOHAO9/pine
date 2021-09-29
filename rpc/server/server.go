@@ -86,7 +86,8 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if rpcMsg.Type == message.RemoterTypeEnum.HANDLER {
+		switch rpcMsg.Type {
+		case message.RemoterTypeEnum.HANDLER:
 			ok := clienthandler.Manager.Exec(rpcCtx)
 			if !ok {
 				if rpcCtx.GetRequestID() == 0 {
@@ -96,7 +97,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-		} else if rpcMsg.Type == message.RemoterTypeEnum.REMOTER {
+		case message.RemoterTypeEnum.REMOTER:
 			ok := serverhandler.Manager.Exec(rpcCtx)
 			if !ok {
 				if rpcCtx.GetRequestID() == 0 {
@@ -105,7 +106,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 					logger.Warn(fmt.Sprintf("Remoter(%v)不存在", rpcCtx.GetHandler()))
 				}
 			}
-		} else {
+		default:
 			logger.Panic("无效的消息类型")
 		}
 	}

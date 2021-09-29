@@ -14,7 +14,7 @@ import (
 	"github.com/YAOHAO9/pine/service/compressservice"
 )
 
-func gerReciveMsg(connInfo *ConnInfo) func(data []byte) {
+func getReciveMsgFunc(connInfo *ConnInfo) func(data []byte) {
 
 	return func(data []byte) {
 		// 解析消息
@@ -153,7 +153,7 @@ func Start(connectorPlugin ConnectorInterface, authFn func(uid, token string, se
 
 		SaveConnInfo(connInfo)
 
-		connection.OnReceiveMsg(gerReciveMsg(connInfo))
+		connection.OnReceiveMsg(getReciveMsgFunc(connInfo))
 		return nil
 	})
 
