@@ -23,7 +23,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 
 // Start rpc server
 func Start() {
@@ -63,7 +67,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// token校验
 	if token != config.GetServerConfig().Token {
-		logger.Error("用户校验失败!!!")
+		logger.Error("集群认证失败!!!")
 		conn.CloseHandler()(0, "认证失败")
 		return
 	}

@@ -1,8 +1,9 @@
 package session
 
 // Get a value from session
-func (session *Session) Get(key string) interface{} {
-	return session.Data[key]
+func (session *Session) Get(key string) (string, bool) {
+	result, exists := session.Data[key]
+	return result, exists
 }
 
 // Set a value to session
