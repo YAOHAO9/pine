@@ -1,8 +1,6 @@
 package connector
 
-type ConnectionInterface interface {
-	GetUid() string
-	GetToken() string
+type PluginConn interface {
 	SendMsg(bytes []byte) error
 	OnReceiveMsg(func(bytes []byte))
 	OnClose(func(err error))
@@ -10,6 +8,6 @@ type ConnectionInterface interface {
 }
 
 type ConnectorPlugin interface {
-	OnConnect(func(conn ConnectionInterface) error)
+	OnConnect(func(uid, token string, pluginConn PluginConn) error)
 	Start()
 }

@@ -38,14 +38,14 @@ func registerConnectorHandler() {
 			return
 		}
 
-		connInfo := GetConnInfo(rpcCtx.Session.UID)
-		if connInfo == nil {
+		connproxy := GetConnProxy(rpcCtx.Session.UID)
+		if connproxy == nil {
 			logger.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
 			return
 		}
 
 		for key, value := range data {
-			connInfo.data[key] = value
+			connproxy.data[key] = value
 		}
 
 		if rpcCtx.GetRequestID() > 0 {
@@ -55,8 +55,8 @@ func registerConnectorHandler() {
 
 	// 推送消息
 	serverhandler.Manager.Register(ConnectorHandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
-		connInfo := GetConnInfo(rpcCtx.Session.UID)
-		if connInfo == nil {
+		connproxy := GetConnProxy(rpcCtx.Session.UID)
+		if connproxy == nil {
 			logger.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
 			return
 		}
@@ -69,7 +69,7 @@ func registerConnectorHandler() {
 			}
 		}
 
-		connInfo.notify(data)
+		connproxy.notify(data)
 	})
 
 	// 获取路由记录
@@ -82,12 +82,12 @@ func registerConnectorHandler() {
 		CID string
 		UID string
 	}) {
-		connInfo := GetConnInfo(data.UID)
+		connproxy := GetConnProxy(data.UID)
 		var session *session.Session
-		if connInfo == nil {
+		if connproxy == nil {
 			rpcCtx.Response("")
 		} else {
-			session = connInfo.GetSession()
+			session = connproxy.GetSession()
 			rpcCtx.Response(session)
 		}
 
@@ -100,8 +100,8 @@ func registerConnectorHandler() {
 
 	// 广播
 	serverhandler.Manager.Register(ConnectorHandlerMap.BroadCast, func(rpcCtx *context.RPCCtx, notify *message.PineMsg) {
-		for _, connInfo := range connInfoStore {
-			connInfo.notify(notify)
+		for _, connproxy := range connProxyStore {
+			connproxy.notify(notify)
 		}
 	})
 

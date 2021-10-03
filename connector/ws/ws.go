@@ -10,17 +10,17 @@ import (
 )
 
 func New(port uint32) connector.ConnectorPlugin {
-	return &WsConnector{
+	return &wsConnector{
 		port: port,
 	}
 }
 
-type WsConnector struct {
+type wsConnector struct {
 	port      uint32
-	connectCb func(conn connector.ConnectionInterface) error
+	connectCb func(uid, token string, conn connector.PluginConn) error
 }
 
-func (ws *WsConnector) Start() {
+func (ws *wsConnector) Start() {
 	connectorServer := http.NewServeMux()
 
 	var upgrader = websocket.Upgrader{
@@ -52,14 +52,12 @@ func (ws *WsConnector) Start() {
 		token := r.URL.Query().Get("token")
 
 		// 连接信息
-		wsConnection := &WsConnection{
-			uid:   uid,
-			token: token,
-			conn:  conn,
+		wsConnection := &wsConn{
+			conn: conn,
 		}
 
 		// 调用连接Callback
-		if err = ws.connectCb(wsConnection); err != nil {
+		if err = ws.connectCb(uid, token, wsConnection); err != nil {
 			conn.Close()
 		}
 	})
@@ -71,6 +69,6 @@ func (ws *WsConnector) Start() {
 	logger.Error("Connector server start fail: ", err.Error())
 }
 
-func (ws *WsConnector) OnConnect(cb func(conn connector.ConnectionInterface) error) {
+func (ws *wsConnector) OnConnect(cb func(uid, token string, conn connector.PluginConn) error) {
 	ws.connectCb = cb
 }

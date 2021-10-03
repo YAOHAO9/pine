@@ -5,47 +5,35 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type WsConnection struct {
-	uid          string
-	token        string
+type wsConn struct {
 	conn         *websocket.Conn
 	receiveMsgCb func(bytes []byte)
 	closeCb      func(err error)
 }
 
-// 获取Uid
-func (conn *WsConnection) GetUid() string {
-	return conn.uid
-}
-
-// 获取token
-func (conn *WsConnection) GetToken() string {
-	return conn.token
-}
-
 // 发送消息
-func (conn *WsConnection) SendMsg(bytes []byte) error {
+func (conn *wsConn) SendMsg(bytes []byte) error {
 	return conn.conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
 }
 
 // 关闭连接
-func (conn *WsConnection) Close() {
+func (conn *wsConn) Close() {
 	conn.conn.Close()
 }
 
 // 设置接收消息函数
-func (conn *WsConnection) OnReceiveMsg(receiverCb func(bytes []byte)) {
+func (conn *wsConn) OnReceiveMsg(receiverCb func(bytes []byte)) {
 	conn.receiveMsgCb = receiverCb
 	conn.startReceiveMsg()
 }
 
 // 关闭监听
-func (conn *WsConnection) OnClose(closeCb func(err error)) {
+func (conn *wsConn) OnClose(closeCb func(err error)) {
 	conn.closeCb = closeCb
 }
 
 // 开始接收消息
-func (conn *WsConnection) startReceiveMsg() {
+func (conn *wsConn) startReceiveMsg() {
 	// 开始接收消息
 	for {
 		_, data, err := conn.conn.ReadMessage()

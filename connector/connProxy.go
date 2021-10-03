@@ -10,10 +10,10 @@ import (
 	"github.com/YAOHAO9/pine/serializer"
 )
 
-// ConnInfo 用户连接信息
-type ConnInfo struct {
+// connProxy 用户连接信息
+type connProxy struct {
 	uid            string
-	conn           ConnectionInterface
+	conn           PluginConn
 	data           map[string]string
 	routeRecord    map[string]string
 	compressRecord map[string]bool
@@ -21,20 +21,20 @@ type ConnInfo struct {
 }
 
 // Get 从session中查找一个值
-func (connInfo *ConnInfo) Get(key string) string {
-	return connInfo.data[key]
+func (connproxy *connProxy) Get(key string) string {
+	return connproxy.data[key]
 }
 
 // Set 往session中设置一个键值对
-func (connInfo *ConnInfo) Set(key string, v string) {
-	connInfo.data[key] = v
+func (connproxy *connProxy) Set(key string, v string) {
+	connproxy.data[key] = v
 }
 
 // 回复request
-func (connInfo *ConnInfo) response(pineMsg *message.PineMsg) {
-	connInfo.mutex.Lock()
-	defer connInfo.mutex.Unlock()
-	err := connInfo.conn.SendMsg(serializer.ToBytes(pineMsg))
+func (connproxy *connProxy) response(pineMsg *message.PineMsg) {
+	connproxy.mutex.Lock()
+	defer connproxy.mutex.Unlock()
+	err := connproxy.conn.SendMsg(serializer.ToBytes(pineMsg))
 
 	if err != nil {
 		logger.Error(err)
@@ -42,12 +42,12 @@ func (connInfo *ConnInfo) response(pineMsg *message.PineMsg) {
 }
 
 // 主动推送消息
-func (connInfo *ConnInfo) notify(notify *message.PineMsg) {
+func (connproxy *connProxy) notify(notify *message.PineMsg) {
 
-	connInfo.mutex.Lock()
-	defer connInfo.mutex.Unlock()
+	connproxy.mutex.Lock()
+	defer connproxy.mutex.Unlock()
 
-	err := connInfo.conn.SendMsg(serializer.ToBytes(notify))
+	err := connproxy.conn.SendMsg(serializer.ToBytes(notify))
 
 	if err != nil {
 		logger.Error(err)
@@ -55,11 +55,11 @@ func (connInfo *ConnInfo) notify(notify *message.PineMsg) {
 }
 
 // GetSession 获取session
-func (connInfo *ConnInfo) GetSession() *session.Session {
+func (connproxy *connProxy) GetSession() *session.Session {
 	session := &session.Session{
-		UID:  connInfo.uid,
+		UID:  connproxy.uid,
 		CID:  config.GetServerConfig().ID,
-		Data: connInfo.data,
+		Data: connproxy.data,
 	}
 	return session
 }

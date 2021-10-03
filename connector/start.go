@@ -68,40 +68,38 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 	compressservice.Event.AddRecord(ConnectorHandlerMap.Kick)
 
 	// 客户端连接后发起的回调函数
-	connectorPlugin.OnConnect(func(connection ConnectionInterface) error {
-		uid := connection.GetUid()
-
+	connectorPlugin.OnConnect(func(uid, token string, pluginConn PluginConn) error {
 		// 认证
 		sessionData := make(map[string]string)
-		err := options.authFn(uid, connection.GetToken(), sessionData)
+		err := options.authFn(uid, token, sessionData)
 		if err != nil {
 			return err
 		}
 
 		// 防止重复连接
-		if oldConnInfo := GetConnInfo(uid); oldConnInfo != nil {
-			oldConnInfo.conn.Close()
+		if oldConnProxy := GetConnProxy(uid); oldConnProxy != nil {
+			oldConnProxy.conn.Close()
 		}
 
 		// 保存连接信息
-		connInfo := &ConnInfo{
+		connproxy := &connProxy{
 			uid:            uid,
-			conn:           connection,
+			conn:           pluginConn,
 			data:           sessionData,
 			routeRecord:    make(map[string]string),
 			compressRecord: make(map[string]bool),
 		}
-		SaveConnInfo(connInfo)
+		SaveConnProxy(connproxy)
 
 		// 断开连接自动清除连接信息
-		connection.OnClose(func(err error) {
-			DelConnInfo(uid)
-			session := connInfo.GetSession()
+		pluginConn.OnClose(func(err error) {
+			DelConnProxy(uid)
+			session := connproxy.GetSession()
 			options.closeFn(session, err)
 		})
 
 		// 接收消息
-		connection.OnReceiveMsg(func(data []byte) {
+		pluginConn.OnReceiveMsg(func(data []byte) {
 			// 解析消息
 			clientMessage := &message.PineMsg{}
 			err := serializer.FromBytes(data, clientMessage)
@@ -128,7 +126,7 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 			}
 
 			// 获取session
-			session := connInfo.GetSession()
+			session := connproxy.GetSession()
 
 			// RPC请求消息结构体
 			rpcMsg := &message.RPCMsg{
@@ -141,7 +139,7 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 			}
 
 			// 获取RPCCLint
-			rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg, &connInfo.routeRecord)
+			rpcClient := clientmanager.GetClientByRouter(serverKind, rpcMsg, &connproxy.routeRecord)
 
 			if rpcClient == nil {
 
@@ -155,7 +153,7 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 					}),
 				}
 
-				connInfo.response(clientMessageResp)
+				connproxy.response(clientMessageResp)
 				return
 			}
 
@@ -168,7 +166,7 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 					Data:      []byte(err.Error()),
 				}
 
-				connInfo.response(pineMsg)
+				connproxy.response(pineMsg)
 				return
 			}
 
@@ -187,7 +185,7 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 					// 执行Filter
 					connector_filter.After.Exec(pineMsg)
 					// 给客户端回复消息
-					connInfo.response(pineMsg)
+					connproxy.response(pineMsg)
 				})
 			}
 		})
