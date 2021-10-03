@@ -9,7 +9,7 @@ type ConnectionInterface interface {
 	Close()
 }
 
-type ConnectorInterface interface {
+type ConnectorPlugin interface {
 	OnConnect(func(conn ConnectionInterface) error)
 	Start()
 }

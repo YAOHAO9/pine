@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func New(port uint32) connector.ConnectorInterface {
+func New(port uint32) connector.ConnectorPlugin {
 	return &WsConnector{
 		port: port,
 	}
