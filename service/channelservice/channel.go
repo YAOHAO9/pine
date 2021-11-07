@@ -67,9 +67,14 @@ func (channel Channel) PushMessageToUser(uid string, event string, data interfac
 
 }
 
-// Add 推送消息给其他人
+// Add
 func (channel Channel) Add(uid string, session *session.Session) {
 	channel[uid] = session
+}
+
+// Remove
+func (channel Channel) Remove(uid string) {
+	delete(channel, uid)
 }
 
 // PushMessageBySession 通过session推送消息
