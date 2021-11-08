@@ -45,7 +45,11 @@ func registerConnectorHandler() {
 		}
 
 		for key, value := range data {
-			connproxy.data[key] = value
+			if value == "" {
+				delete(connproxy.data, key)
+			} else {
+				connproxy.data[key] = value
+			}
 		}
 
 		if rpcCtx.GetRequestID() > 0 {
