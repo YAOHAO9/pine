@@ -13,6 +13,8 @@ RPCServer:
   Host: 127.0.0.1 
   Port: 3014 
   Token: ksYNdrAo # 集群认证Token
+  Labels:
+    - game
 
 Connector:
   Port: 3114
