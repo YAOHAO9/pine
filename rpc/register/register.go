@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
+	"strings"
 	"time"
 
 	"github.com/YAOHAO9/pine/application/config"
@@ -15,26 +17,91 @@ import (
 
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
 var etcdClient *clientv3.Client
 var sessionTimeout = 10 * time.Second
 
+// 10进制数转换   n 表示进制， 16 or 36
+func numToBHex(num, n int) string {
+	var num2char = "0123456789abcdefghijklmnopqrstuvwxyz"
+
+	num_str := ""
+	for num != 0 {
+		yu := num % n
+		num_str = string(num2char[yu]) + num_str
+		num = num / n
+	}
+	return strings.ToUpper(num_str)
+}
+
 // Start zookeeper
-func Start() {
+func Start(init chan bool) {
 
 	client, err := clientv3.New(clientv3.Config{
 		Endpoints:   config.GetEtcdConfig().Addrs,
 		DialTimeout: sessionTimeout,
 	})
-
-	etcdClient = client
-
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
+	etcdClient = client
 
+	// 服务器配置
+	serverConfig := config.GetServerConfig()
+	session, err := concurrency.NewSession(client)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	defer session.Close()
+
+	locker := concurrency.NewLocker(session, fmt.Sprintf("/%s", serverConfig.Kind))
+	locker.Lock()
+	defer locker.Unlock()
+
+	if serverConfig.ID == "" {
+		getRsp, err := client.Get(context.TODO(), fmt.Sprintf("/%s/%s", serverConfig.ClusterName, serverConfig.Kind), clientv3.WithPrefix())
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+
+		// 生成一个唯一ID
+		length := len(getRsp.Kvs) + 1
+		for index := 1; index <= length; index++ {
+			serverConfig.ID = fmt.Sprintf("%s-%s", serverConfig.Kind, numToBHex(index, 36))
+			getRsp, err := client.Get(context.TODO(), fmt.Sprintf("/%s/%s", serverConfig.ClusterName, serverConfig.ID))
+			if err != nil {
+				logrus.Panic(err)
+				return
+			}
+
+			if len(getRsp.Kvs) == 0 {
+				break
+			}
+		}
+	}
+
+	//获取一个没有被占用的端口
+	if serverConfig.Port == 0 {
+
+		for port := 3000; port < 65535; port++ {
+			tcp, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: port})
+			if err != nil {
+				serverConfig.Port = uint32(port)
+				break
+			} else {
+				fmt.Println("端口被占用:", port)
+				tcp.Close()
+			}
+		}
+
+	}
+
+	init <- true
 	// 初始化节点
 	initNode()
 

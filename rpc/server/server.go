@@ -3,12 +3,9 @@ package server
 import (
 	"fmt"
 	"io/ioutil"
-	"math/rand"
-	"net"
 	"net/http"
 	"os"
 	"path"
-	"strings"
 	"sync"
 
 	"github.com/YAOHAO9/pine/application/config"
@@ -32,46 +29,16 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// 10进制数转换   n 表示进制， 16 or 36
-func numToBHex(num, n int64) string {
-	var num2char = "0123456789abcdefghijklmnopqrstuvwxyz"
-
-	num_str := ""
-	for num != 0 {
-		yu := num % n
-		num_str = string(num2char[yu]) + num_str
-		num = num / n
-	}
-	return strings.ToUpper(num_str)
-}
-
 // Start rpc server
 func Start() {
 	registerProtoHandler()
+
+	init := make(chan bool)
+	go register.Start(init)
+	<-init
+
 	// 获取服务器配置
 	serverConfig := config.GetServerConfig()
-
-	if serverConfig.ID == "" {
-		serverConfig.ID = fmt.Sprintf("%s-%s", serverConfig.Kind, numToBHex(rand.Int63n(100000), 36))
-	}
-
-	if serverConfig.Port == 0 {
-
-		for port := 3000; port < 65535; port++ {
-			tcp, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: port})
-			if err != nil {
-				serverConfig.Port = uint32(port)
-				break
-			} else {
-				fmt.Println("端口被占用:", port)
-				tcp.Close()
-			}
-		}
-
-	}
-
-	go register.Start()
-
 	rpcServer := http.NewServeMux()
 
 	// RPC server启动
