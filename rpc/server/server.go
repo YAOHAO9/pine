@@ -3,9 +3,12 @@ package server
 import (
 	"fmt"
 	"io/ioutil"
+	"math/rand"
+	"net"
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"sync"
 
 	"github.com/YAOHAO9/pine/application/config"
@@ -16,7 +19,7 @@ import (
 	"github.com/YAOHAO9/pine/rpc/handler/clienthandler"
 	"github.com/YAOHAO9/pine/rpc/handler/serverhandler"
 	"github.com/YAOHAO9/pine/rpc/message"
-	"github.com/YAOHAO9/pine/rpc/zookeeper"
+	"github.com/YAOHAO9/pine/rpc/register"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/golang/protobuf/proto"
 
@@ -29,15 +32,48 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// 10进制数转换   n 表示进制， 16 or 36
+func numToBHex(num, n int64) string {
+	var num2char = "0123456789abcdefghijklmnopqrstuvwxyz"
+
+	num_str := ""
+	for num != 0 {
+		yu := num % n
+		num_str = string(num2char[yu]) + num_str
+		num = num / n
+	}
+	return strings.ToUpper(num_str)
+}
+
 // Start rpc server
 func Start() {
 	registerProtoHandler()
-	// 注册到zookeeper
-	go registToZk()
-
-	rpcServer := http.NewServeMux()
 	// 获取服务器配置
 	serverConfig := config.GetServerConfig()
+
+	if serverConfig.ID == "" {
+		serverConfig.ID = fmt.Sprintf("%s-%s", serverConfig.Kind, numToBHex(rand.Int63n(100000), 36))
+	}
+
+	if serverConfig.Port == 0 {
+
+		for port := 3000; port < 65535; port++ {
+			tcp, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: port})
+			if err != nil {
+				serverConfig.Port = uint32(port)
+				break
+			} else {
+				fmt.Println("端口被占用:", port)
+				tcp.Close()
+			}
+		}
+
+	}
+
+	go register.Start()
+
+	rpcServer := http.NewServeMux()
+
 	// RPC server启动
 	logger.Info("Rpc server started ws://" + serverConfig.Host + ":" + fmt.Sprint(serverConfig.Port))
 	rpcServer.HandleFunc("/", webSocketHandler)
@@ -114,11 +150,6 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			logger.Panic("无效的消息类型")
 		}
 	}
-}
-
-// 注册到zookeeper
-func registToZk() {
-	zookeeper.Start()
 }
 
 func checkFileIsExist(filename string) bool {

@@ -2,19 +2,18 @@ Log:
   Type: "Console" # Console File 
   Level: "Debug" # Debug Info Warn Error
 
-Zookeeper:
-  Host: 127.0.0.1
-  Port: 2181
+Etcd:
+  Addrs: 
+    - "127.0.0.1:2379"
 
 RPCServer:
   ClusterName: "awesome_pine"
-  ID: connector-0 # 唯一ID
+  ID: "" # 唯一ID
   Kind: connector # 服务器类型
   Host: 127.0.0.1 
-  Port: 3014 
+  Port: 0
   Token: ksYNdrAo # 集群认证Token
   Labels:
-    - game
 
 Connector:
-  Port: 3114
+  Port: 3014

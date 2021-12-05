@@ -19,8 +19,7 @@
                 "RPCServer_Token": "ksYNdrAo",
                 "Log_Type": "Console",
                 "Log_Level": "Debug",
-                "Zookeeper_Host": "127.0.0.1",
-                "Zookeeper_Port": 2181,
+                "Etcd_Addrs": "127.0.0.1:2379",
                 "Connector_Port": 3114,
             },
             "args": [],
@@ -76,8 +75,7 @@
                 "RPCServer_Token": "ksYNdrAo",
                 "LogType": "Console",
                 "LogLevel": "Debug",
-                "Zookeeper_Host": "127.0.0.1",
-                "Zookeeper_Port": 2181,
+                "Etcd_Addrs": "127.0.0.1:2379",
             },
             "args": [],
             "internalConsoleOptions": "openOnSessionStart"
@@ -97,8 +95,7 @@
                 "RPCServer_Token": "ksYNdrAo",
                 "LogType": "Console",
                 "LogLevel": "Debug",
-                "Zookeeper_Host": "127.0.0.1",
-                "Zookeeper_Port": 2181,
+                "Etcd_Addrs": "127.0.0.1:2379",
             },
             "args": []
         },
@@ -107,7 +104,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/test/test.go",
+            "program": "${file}",
             "env": {},
             "args": []
         }

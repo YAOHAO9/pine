@@ -10,7 +10,6 @@ Pine 架构理念来源于pomelo(pinus)，以最简洁的方式实现go语言版
 + [Getting started 快速开始](../../wiki)
 
 ### 更多 
-+ [Docker-compose 部署zookeeper](../../wiki/Zookeeper)
 + [Client 客户端](../../wiki/Client)
 + [Rpc RPC](../../wiki/Rpc)
 + [Router 路由](../../wiki/Router)

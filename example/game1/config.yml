@@ -9,6 +9,6 @@ Server:
   LogType: "Console" # Console File 
   LogLevel: "Debug" # Debug Info Warn Error
 
-Zookeeper:
-  Host: 127.0.0.1
-  Port: 2181
+Etcd:
+  Addrs: 
+    - "127.0.0.1:2379"

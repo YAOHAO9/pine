@@ -8,10 +8,10 @@ var serverConfig *RPCServerConfig
 // RPCServerConfig 服务器配置 配置文件
 type RPCServerConfig struct {
 	ClusterName string `validate:"required"`
-	ID          string `validate:"required"`
+	ID          string
 	Kind        string `validate:"required"`
 	Host        string `validate:"required"`
-	Port        uint32 `validate:"gte=1,lte=65535"`
+	Port        uint32 `validate:"gte=0,lte=65535"`
 	Token       string `validate:"required"`
 	IsConnector bool
 	Labels      []string
@@ -19,6 +19,9 @@ type RPCServerConfig struct {
 
 // 是否包含某个标签
 func (sc *RPCServerConfig) Include(label string) bool {
+	if sc.Labels == nil {
+		return false
+	}
 	for _, l := range sc.Labels {
 		if l == label {
 			return true
@@ -36,5 +39,3 @@ func SetRPCServerConfig(sc *RPCServerConfig) {
 func GetServerConfig() *RPCServerConfig {
 	return serverConfig
 }
-
-

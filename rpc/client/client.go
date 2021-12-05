@@ -86,7 +86,7 @@ func (client *RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) 
 }
 
 // StartClient websocket client
-func StartClient(serverConfig *config.RPCServerConfig, zkSessionTimeout time.Duration, closeFunc func(id string)) *RPCClient {
+func StartClient(serverConfig *config.RPCServerConfig, sessionTimeout time.Duration, closeFunc func(id string)) *RPCClient {
 
 	// Dialer
 	dialer := websocket.Dialer{}
@@ -101,7 +101,7 @@ func StartClient(serverConfig *config.RPCServerConfig, zkSessionTimeout time.Dur
 	// 当前尝试次数
 	tryTimes := 0
 	// 最大尝试次数
-	maxTryTimes := int(50 + zkSessionTimeout/100/time.Millisecond)
+	maxTryTimes := int(50 + sessionTimeout/100/time.Millisecond)
 
 	// 尝试建立连接
 	var clientConn *websocket.Conn
