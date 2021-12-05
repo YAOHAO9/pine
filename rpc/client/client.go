@@ -44,6 +44,7 @@ func genRequestID() *int32 {
 type RPCClient struct {
 	Conn         *websocket.Conn
 	ServerConfig *config.RPCServerConfig
+	CloseFn      func(id string)
 	mutex        sync.Mutex
 }
 
@@ -51,6 +52,9 @@ type RPCClient struct {
 func (client *RPCClient) SendMsg(bytes []byte) {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
+	if client.Conn == nil {
+		client.CreateConn()
+	}
 	client.Conn.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
 }
 
@@ -86,8 +90,11 @@ func (client *RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) 
 }
 
 // StartClient websocket client
-func StartClient(serverConfig *config.RPCServerConfig, sessionTimeout time.Duration, closeFunc func(id string)) *RPCClient {
+func (client *RPCClient) CreateConn() {
 
+	sessionTimeout := time.Second * 3
+
+	serverConfig := client.ServerConfig
 	// Dialer
 	dialer := websocket.Dialer{}
 	urlString := url.URL{
@@ -136,7 +143,7 @@ func StartClient(serverConfig *config.RPCServerConfig, sessionTimeout time.Durat
 			if err != nil {
 				clientConn.Close()
 				clientConn.CloseHandler()(0, "")
-				closeFunc(serverConfig.ID)
+				client.CloseFn(serverConfig.ID)
 				logger.Warn("服务", serverConfig.ID, "掉线")
 				break
 			}
@@ -208,8 +215,5 @@ func StartClient(serverConfig *config.RPCServerConfig, sessionTimeout time.Durat
 		}
 	}()
 
-	return &RPCClient{
-		Conn:         clientConn,
-		ServerConfig: serverConfig,
-	}
+	client.Conn = clientConn
 }

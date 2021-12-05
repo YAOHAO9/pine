@@ -94,12 +94,13 @@ func watch() {
 				switch event.Type {
 				case mvccpb.PUT:
 					{
-						createClient(event.Kv.Value)
+						createRpcClient(event.Kv.Value)
 					}
 
 				case mvccpb.DELETE:
-
-					break
+					{
+						delRpcClient(event.PrevKv.Value)
+					}
 				}
 
 			}
@@ -115,12 +116,12 @@ func watch() {
 	}
 
 	for _, kv := range getRsp.Kvs {
-		createClient(kv.Value)
+		createRpcClient(kv.Value)
 	}
 
 }
 
-func createClient(data []byte) {
+func createRpcClient(data []byte) {
 	// 解析服务器信息
 	serverConfig := &config.RPCServerConfig{}
 	err := json.Unmarshal(data, serverConfig)
@@ -128,12 +129,22 @@ func createClient(data []byte) {
 		logger.Error(err)
 		return
 	}
-	logger.Warn("Server:start ", serverConfig.ID)
 	// 创建客户端，并与该服务器连接
-	clientmanager.CreateClient(serverConfig, sessionTimeout)
-	logger.Warn("Server:end ", serverConfig.ID)
+	clientmanager.CreateRpcClient(serverConfig)
 	if config.GetServerConfig().IsConnector {
 		// 将Server加入compressservice，生成一个对应的压缩码
 		compressservice.Server.AddRecord(serverConfig.Kind)
 	}
+}
+
+func delRpcClient(data []byte) {
+	// 解析服务器信息
+	serverConfig := &config.RPCServerConfig{}
+	err := json.Unmarshal(data, serverConfig)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	// 删除连接
+	clientmanager.DelRpcClient(serverConfig)
 }

@@ -2,7 +2,6 @@ package clientmanager
 
 import (
 	"math/rand"
-	"time"
 
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/rpc/client"
@@ -82,18 +81,31 @@ func DelClientByID(id string) {
 	return
 }
 
-// CreateClient 创建RPC连接客户端
-func CreateClient(serverConfig *config.RPCServerConfig, zkSessionTimeout time.Duration) {
+// CreateRpcClient 创建RPC连接客户端
+func CreateRpcClient(serverConfig *config.RPCServerConfig) {
 	defer func() {
 		data := recover()
 		if data != nil {
 			delete(rpcClientMap, serverConfig.ID)
 		}
 	}()
-	rpcClient := client.StartClient(serverConfig, zkSessionTimeout, func(id string) {
-		DelClientByID(id)
-	})
+
+	rpcClient := &client.RPCClient{
+		ServerConfig: serverConfig,
+		CloseFn: func(id string) {
+			DelClientByID(id)
+		},
+	}
+
 	if rpcClient != nil {
 		rpcClientMap[serverConfig.ID] = rpcClient
+	}
+}
+
+// DelRpcClient 删除RPC连接客户端
+func DelRpcClient(serverConfig *config.RPCServerConfig) {
+	client := GetClientByID(serverConfig.ID)
+	if client != nil && client.Conn == nil {
+		DelClientByID(serverConfig.ID)
 	}
 }
