@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/connector"
 	"github.com/YAOHAO9/pine/logger"
 	RpcServer "github.com/YAOHAO9/pine/rpc/server"
 )
@@ -17,11 +18,26 @@ func init() {
 
 // Application app
 type Application struct {
+	connectorPlugin connector.ConnectorPlugin
+	connectorOpts   []connector.Option
 }
 
 // Start start application
-func (app Application) Start() {
-	RpcServer.Start()
+func (app *Application) Start() {
+	startCh := make(chan bool)
+	go func() {
+		<-startCh
+		if app.connectorPlugin == nil {
+			return
+		}
+		connector.Start(app.connectorPlugin, app.connectorOpts...)
+	}()
+	RpcServer.Start(startCh)
+}
+
+func (app *Application) RegisteConnector(connectorPlugin connector.ConnectorPlugin, opts ...connector.Option) {
+	app.connectorPlugin = connectorPlugin
+	app.connectorOpts = opts
 }
 
 // App pine application instance

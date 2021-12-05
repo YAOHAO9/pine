@@ -30,12 +30,12 @@ var upgrader = websocket.Upgrader{
 }
 
 // Start rpc server
-func Start() {
+func Start(startCh chan bool) {
 	registerProtoHandler()
 
 	init := make(chan bool)
 	go register.Start(init)
-	<-init
+	startCh <- <-init
 
 	// 获取服务器配置
 	serverConfig := config.GetServerConfig()
