@@ -43,10 +43,13 @@ func ParseConfig() {
 	SetConnectorConfig(configYml.Connector)
 
 	// 验证
-	if errs := validator.New().Struct(configYml.RPCServer); errs != nil {
+	if errs := validator.New().Struct(configYml.Log); errs != nil {
 		logrus.Panic(errs)
 	}
 	if errs := validator.New().Struct(configYml.Etcd); errs != nil {
+		logrus.Panic(errs)
+	}
+	if errs := validator.New().Struct(configYml.RPCServer); errs != nil {
 		logrus.Panic(errs)
 	}
 
