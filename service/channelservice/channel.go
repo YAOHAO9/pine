@@ -77,6 +77,11 @@ func (channel Channel) Remove(uid string) {
 	delete(channel, uid)
 }
 
+// Count
+func (channel Channel) MemberCount() int {
+	return len(channel)
+}
+
 // PushMessageBySession 通过session推送消息
 func PushMessageBySession(session *session.Session, event string, data interface{}) {
 
