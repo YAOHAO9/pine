@@ -51,8 +51,8 @@ func ParseConfig() {
 	}
 
 	// 打印配置
-	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("LogConfig: %+v", configYml.Etcd), 0x1B)
-	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("ZooKeeperConfig: %+v", configYml.Etcd), 0x1B)
+	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("LogConfig: %+v", configYml.Log), 0x1B)
+	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("EtcdConfig: %+v", configYml.Etcd), 0x1B)
 	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("RPCServerConfig: %+v", configYml.RPCServer), 0x1B)
 	if configYml.Connector != nil && configYml.Connector.Port != 0 {
 		fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("ConnectorConfig: %+v", configYml.Etcd), 0x1B)
