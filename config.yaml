@@ -1,6 +1,6 @@
 Log:
-  Type: "Console" # Console File 
-  Level: "Debug" # Debug Info Warn Error
+  Type: "Console" # Console、ile 
+  Level: "Debug" # Debug、Info、Warn、Error
 
 Etcd:
   Addrs: 

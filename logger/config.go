@@ -44,7 +44,7 @@ func SetLogMode(logTyp string) {
 		path, _ := os.Getwd()
 
 		writer, err := rotatelogs.New(
-			path+"/log/"+config.GetServerConfig().ID+"-%m_%d-%H_%M.log",
+			path+"/log/"+config.GetServerConfig().ID+"%Y-%m-%d_%H-%M.log",
 			rotatelogs.WithMaxAge(time.Hour*24*30),    // 保留时间
 			rotatelogs.WithRotationTime(24*time.Hour), // 分割间隔
 		)
