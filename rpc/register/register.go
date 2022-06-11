@@ -36,7 +36,7 @@ func numToBHex(num, n int) string {
 	return strings.ToUpper(num_str)
 }
 
-// Start zookeeper
+// Regist to etcd
 func Start(init chan bool) {
 
 	client, err := clientv3.New(clientv3.Config{
@@ -94,7 +94,7 @@ func Start(init chan bool) {
 				serverConfig.Port = uint32(port)
 				break
 			} else {
-				fmt.Println("端口被占用:", port)
+				fmt.Printf("%d端口被占用,正在尝试其他端口\n", port)
 				tcp.Close()
 			}
 		}
