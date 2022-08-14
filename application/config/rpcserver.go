@@ -13,6 +13,7 @@ type RPCServerConfig struct {
 	Host        string `validate:"required"`
 	Port        uint32 `validate:"gte=0,lte=65535"`
 	Token       string `validate:"required"`
+	Env         string `validate:"required"`
 	IsConnector bool
 	Labels      []string
 }

@@ -11,7 +11,7 @@ import (
 
 type ymlConfig struct {
 	Log       *LogConfig
-	Etcd *EtcdConfig
+	Etcd      *EtcdConfig
 	RPCServer *RPCServerConfig
 	Connector *ConnectorConfig
 }
