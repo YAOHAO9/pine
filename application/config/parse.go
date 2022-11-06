@@ -2,9 +2,11 @@ package config
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/jessevdk/go-flags"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -16,13 +18,31 @@ type ymlConfig struct {
 	Connector *ConnectorConfig
 }
 
+type option struct {
+	Config string `short:"c" long:"config" description:"Config yaml path"`
+}
+
 // ParseConfig 解析命令行参数
 func ParseConfig() {
+	var opt option
+	flags.Parse(&opt)
 
-	// 保存配置
-	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
+	if opt.Config != "" {
+		dir, file := filepath.Split(opt.Config)
+		// 设置配置文件搜索路径
+		viper.AddConfigPath(dir)
+		ext := filepath.Ext(file)
+		// 设置配置文件名称
+		viper.SetConfigName(file[0:len(file)-len(ext)])
+		// 设置配置文件类型
+		viper.SetConfigType(ext[1:])
+	} else {
+		// 默认配置文件名称
+		viper.SetConfigName("config")
+	}
 	viper.AddConfigPath(".")
+	
 
 	err := viper.ReadInConfig()
 
