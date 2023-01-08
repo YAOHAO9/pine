@@ -18,7 +18,7 @@ func compressEvent(event string) string {
 	if code != 0 {
 		return string(code)
 	}
-	return config.GetServerConfig().Kind + "." + event
+	return config.Server.Kind + "." + event
 }
 
 // PushMessage 推送消息给所有人

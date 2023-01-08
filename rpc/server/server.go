@@ -38,7 +38,7 @@ func Start(startCh chan bool) {
 	startCh <- <-init
 
 	// 获取服务器配置
-	serverConfig := config.GetServerConfig()
+	serverConfig := config.Server
 	rpcServer := http.NewServeMux()
 
 	// RPC server启动
@@ -69,7 +69,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 
 	// token校验
-	if token != config.GetServerConfig().Token {
+	if token != config.Server.Token {
 		logger.Error("集群认证失败!!!")
 		conn.CloseHandler()(0, "认证失败")
 		return
@@ -157,7 +157,7 @@ func registerProtoHandler() {
 		result["events"] = compressservice.Event.GetEvents()
 
 		// serverKind
-		result["serverKind"] = config.GetServerConfig().Kind
+		result["serverKind"] = config.Server.Kind
 
 		rpcMsg := &message.RPCMsg{
 			Handler: connector.ConnectorHandlerMap.ServerCode,

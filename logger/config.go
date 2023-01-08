@@ -26,7 +26,7 @@ func SetLogMode(logTyp string) {
 	std.SetReportCaller(true)
 
 	logLevel := logrus.DebugLevel // Default
-	switch config.GetLogConfig().Level {
+	switch config.Log.Level {
 	case LogLevelEnum.Debug: // Debug
 		logLevel = logrus.DebugLevel
 	case LogLevelEnum.Info: // Info
@@ -44,7 +44,7 @@ func SetLogMode(logTyp string) {
 		path, _ := os.Getwd()
 
 		writer, err := rotatelogs.New(
-			path+"/log/"+config.GetServerConfig().ID+"%Y-%m-%d_%H-%M.log",
+			path+"/log/"+config.Server.ID+"%Y-%m-%d_%H-%M.log",
 			rotatelogs.WithMaxAge(time.Hour*24*30),    // 保留时间
 			rotatelogs.WithRotationTime(24*time.Hour), // 分割间隔
 		)

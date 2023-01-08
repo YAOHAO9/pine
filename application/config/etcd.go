@@ -1,21 +1,24 @@
 package config
 
-// ==========================================
-// ZkConfig
-// ==========================================
-var etcdConfig *EtcdConfig
+import "github.com/spf13/viper"
 
-// EtcdConfig zk 配置文件
-type EtcdConfig struct {
+// ==========================================
+// EtcdConfig
+// ==========================================
+
+// EtcdConfig
+type etcd struct {
 	Addrs []string `validate:"required"`
 }
 
-// SetEtcdConfig 配置zookeeper配置
-func SetEtcdConfig(zc *EtcdConfig) {
-	etcdConfig = zc
+type etcdConfig struct {
+	Etcd *etcd
 }
 
-// GetEtcdConfig 获取zk配置
-func GetEtcdConfig() *EtcdConfig {
-	return etcdConfig
+var Etcd = &etcd{}
+
+// InitEtcdConfig 
+func InitEtcdConfig() {
+	etcdConfig := &etcdConfig{Etcd: Etcd}
+	viper.Unmarshal(etcdConfig)
 }

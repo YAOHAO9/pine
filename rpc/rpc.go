@@ -12,7 +12,7 @@ type notify struct{}
 // ToServer Rpc到指定的Server
 func (n notify) ToServer(serverID string, rpcMsg *message.RPCMsg) {
 
-	rpcMsg.From = config.GetServerConfig().ID
+	rpcMsg.From = config.Server.ID
 	if rpcMsg.Type == 0 {
 		rpcMsg.Type = message.RemoterTypeEnum.REMOTER
 	}
@@ -28,7 +28,7 @@ func (n notify) ToServer(serverID string, rpcMsg *message.RPCMsg) {
 
 // ByKind Rpc到指定的Server
 func (n notify) ByKind(serverKind string, rpcMsg *message.RPCMsg) {
-	rpcMsg.From = config.GetServerConfig().ID
+	rpcMsg.From = config.Server.ID
 	if rpcMsg.Type == 0 {
 		rpcMsg.Type = message.RemoterTypeEnum.REMOTER
 	}
@@ -46,7 +46,7 @@ type request struct{}
 // ToServer Rpc到指定的Server
 func (req request) ToServer(serverID string, rpcMsg *message.RPCMsg, f interface{}) {
 
-	rpcMsg.From = config.GetServerConfig().ID
+	rpcMsg.From = config.Server.ID
 
 	if rpcMsg.Type == 0 {
 		rpcMsg.Type = message.RemoterTypeEnum.REMOTER
@@ -64,7 +64,7 @@ func (req request) ToServer(serverID string, rpcMsg *message.RPCMsg, f interface
 
 // ByKind Rpc到指定的Server
 func (req request) ByKind(serverKind string, rpcMsg *message.RPCMsg, f interface{}) {
-	rpcMsg.From = config.GetServerConfig().ID
+	rpcMsg.From = config.Server.ID
 	if rpcMsg.Type == 0 {
 		rpcMsg.Type = message.RemoterTypeEnum.REMOTER
 	}
@@ -81,7 +81,7 @@ func (req request) ByKind(serverKind string, rpcMsg *message.RPCMsg, f interface
 func BroadCast(rpcMsg *message.RPCMsg) {
 	clients := clientmanager.GetClientsByKind("connector")
 
-	rpcMsg.From = config.GetServerConfig().ID
+	rpcMsg.From = config.Server.ID
 	if rpcMsg.Type == 0 {
 		rpcMsg.Type = message.RemoterTypeEnum.REMOTER
 	}

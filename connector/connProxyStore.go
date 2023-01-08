@@ -35,7 +35,7 @@ func KickByUid(uid string, data []byte) {
 	}
 	notify := &message.PineMsg{
 		Route: string([]byte{
-			compressservice.Server.GetCodeByKind(config.GetServerConfig().Kind),
+			compressservice.Server.GetCodeByKind(config.Server.Kind),
 			compressservice.Event.GetCodeByEvent(ConnectorHandlerMap.Kick)}),
 		Data: data,
 	}

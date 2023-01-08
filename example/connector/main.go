@@ -28,7 +28,7 @@ func main() {
 	compressservice.Event.AddRecords("onMsg", "onMsgJSON") // 需要压缩的Event
 
 	connector.Start(
-		wsconnector.New(config.GetConnectorConfig().Port),
+		wsconnector.New(config.Connector.Port),
 		func(uid string, token string, sessionData map[string]string) error {
 
 			if uid == "" || token == "" {

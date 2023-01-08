@@ -63,7 +63,7 @@ func (clienthandler *ClientHandler) Register(handlerName string, handlerFunc int
 
 		tip := "请检测第二个参数是否与server.proto(" + protoFilePath + ")中描述的一致。message " + handlerName
 
-		protoDescriptor := descriptors[0].FindMessage(config.GetServerConfig().Kind + "." + handlerName)
+		protoDescriptor := descriptors[0].FindMessage(config.Server.Kind + "." + handlerName)
 		if protoDescriptor != nil {
 
 			if handlerValue.NumIn() == 1 {
@@ -77,7 +77,7 @@ func (clienthandler *ClientHandler) Register(handlerName string, handlerFunc int
 			}
 		}
 
-		respProtoDescriptor := descriptors[0].FindMessage(config.GetServerConfig().Kind + "." + handlerName + "Resp")
+		respProtoDescriptor := descriptors[0].FindMessage(config.Server.Kind + "." + handlerName + "Resp")
 
 		if respProtoDescriptor != nil {
 

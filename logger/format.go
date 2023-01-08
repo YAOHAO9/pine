@@ -77,9 +77,9 @@ func (f errorFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	// message
 	if entry.Message != "" {
-		b.WriteString(" [" + config.GetServerConfig().ID + ": " + strings.TrimSpace(entry.Message) + "]")
+		b.WriteString(" [" + config.Server.ID + ": " + strings.TrimSpace(entry.Message) + "]")
 	} else {
-		b.WriteString(" [" + config.GetServerConfig().ID + "]")
+		b.WriteString(" [" + config.Server.ID + "]")
 	}
 
 	// Real Stack

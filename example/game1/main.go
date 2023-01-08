@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"game1/handlermessage"
 	_ "net/http/pprof"
 	"strconv"
 	"time"
@@ -15,7 +14,9 @@ import (
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
 	"github.com/YAOHAO9/pine/rpc/context"
+	"github.com/YAOHAO9/pine/rpc/handler"
 	"github.com/YAOHAO9/pine/rpc/message"
+	"github.com/YAOHAO9/pine/rpc/session"
 	"github.com/YAOHAO9/pine/service/channelservice"
 	"github.com/YAOHAO9/pine/service/compressservice"
 	"github.com/YAOHAO9/pine/service/sessionservice"
@@ -27,30 +28,44 @@ func main() {
 
 	compressservice.Event.AddRecords("onMsg", "onMsgJSON") // 需要压缩的Event
 
-	connector.Start(
-		wsconnector.New(config.GetConnectorConfig().Port),
-		func(uid string, token string, sessionData map[string]string) error {
+	app.RegisteConnector(
+		wsconnector.New(config.Connector.Port),
+		connector.WithOnConnectFn(func(uid string, tokenStr string, sessionData map[string]string) error {
 
-			if uid == "" || token == "" {
+			if uid == "" || tokenStr == "" {
 				return logger.NewError("invalid token")
 			}
 
-			sessionData[token] = token
-
 			return nil
-		})
+		}),
 
-	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data *handlermessage.Handler) {
+		connector.WithOnCloseFn(func(session *session.Session, err error) {
 
-		channelservice.PushMessageBySession(rpcCtx.Session, "onMsg", &handlermessage.OnMsg{
-			Name: "From onMsg",
-			Data: "哈哈哈哈哈",
+			serverId, exists := session.Get("PlayingServer")
+			if !exists {
+				logger.Warn("没有正在进行中的游戏")
+				return
+			}
+
+			rpc.Notify.ToServer(serverId, &message.RPCMsg{
+				Handler: "userOffline",
+				Session: session,
+				RawData: []byte{},
+			})
+		}),
+	)
+
+	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data *handler.Handler) {
+
+		channelservice.PushMessageBySession(rpcCtx.Session, "onMsg", map[string]string{
+			"Name": "From onMsg",
+			"Data": "哈哈哈哈哈",
 		})
 
 		// logger.Warn(data)
 
-		handlerResp := &handlermessage.HandlerResp{
-			Name: "HandlerResp",
+		handlerResp := &map[string]string{
+			"Name": "HandlerResp",
 		}
 
 		rpcCtx.Response(handlerResp)
@@ -140,7 +155,7 @@ func main() {
 	app.RegisteRouter("ddz", func(rpcMsg *message.RPCMsg, clients []*client.RPCClient) *client.RPCClient {
 
 		for _, clientInfo := range clients {
-			if chatServerID, ok := rpcMsg.Session.Get("chatServerID").(string); ok && clientInfo.ServerConfig.ID == chatServerID {
+			if chatServerID, ok := rpcMsg.Session.Get("chatServerID"); ok && clientInfo.ServerConfig.ID == chatServerID {
 				return clientInfo
 			}
 		}

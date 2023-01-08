@@ -51,7 +51,7 @@ func (handler *Handler) Exec(rpcCtx *context.RPCCtx) (exist bool) {
 	if rpcCtx.GetRequestID() > 0 {
 		go time.AfterFunc(time.Minute, func() {
 			if rpcCtx.GetRequestID() != -1 {
-				logger.Error(fmt.Sprintf("(%v.%v) response timeout ", config.GetServerConfig().Kind, rpcCtx.GetHandler()))
+				logger.Error(fmt.Sprintf("(%v.%v) response timeout ", config.Server.Kind, rpcCtx.GetHandler()))
 			}
 		})
 	}

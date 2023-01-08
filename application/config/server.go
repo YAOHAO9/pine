@@ -1,12 +1,13 @@
 package config
 
+import "github.com/spf13/viper"
+
 // ==========================================
 // ServerConfig
 // ==========================================
-var serverConfig *RPCServerConfig
 
-// RPCServerConfig 服务器配置 配置文件
-type RPCServerConfig struct {
+// ServerConfig 服务器配置 配置文件
+type RPCServerStruct struct {
 	ClusterName string `validate:"required"`
 	ID          string
 	Kind        string `validate:"required"`
@@ -18,8 +19,14 @@ type RPCServerConfig struct {
 	Labels      []string
 }
 
+type serverConfig struct {
+	RPCServer *RPCServerStruct
+}
+
+var Server = &RPCServerStruct{}
+
 // 是否包含某个标签
-func (sc *RPCServerConfig) Include(label string) bool {
+func (sc *RPCServerStruct) Include(label string) bool {
 	if sc.Labels == nil {
 		return false
 	}
@@ -31,12 +38,8 @@ func (sc *RPCServerConfig) Include(label string) bool {
 	return false
 }
 
-// SetSeRPCrverConfig 保存服务器配置
-func SetRPCServerConfig(sc *RPCServerConfig) {
-	serverConfig = sc
-}
-
-// GetServerConfig 获取服务器配置
-func GetServerConfig() *RPCServerConfig {
-	return serverConfig
+// InitServerConfig
+func InitServerConfig() {
+	serverConfig := &serverConfig{RPCServer: Server}
+	viper.Unmarshal(serverConfig)
 }

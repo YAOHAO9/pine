@@ -43,7 +43,7 @@ func genRequestID() *int32 {
 // RPCClient websocket client 连接信息
 type RPCClient struct {
 	Conn         *websocket.Conn
-	ServerConfig *config.RPCServerConfig
+	ServerConfig *config.RPCServerStruct
 	CloseFn      func(id string)
 	mutex        sync.Mutex
 }

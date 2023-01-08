@@ -1,21 +1,23 @@
 package config
 
+import "github.com/spf13/viper"
+
 // ==========================================
 // ConnectorConfig
 // ==========================================
-var connectorConfig *ConnectorConfig
 
 // ConnectorConfig 服务器配置 配置文件
-type ConnectorConfig struct {
+type connector struct {
 	Port uint32 `validate:"gte=1,lte=65535"`
 }
-
-// SetConnectorConfig 保存服务器配置
-func SetConnectorConfig(cc *ConnectorConfig) {
-	connectorConfig = cc
+type connectorConfig struct {
+	Connector *connector
 }
 
-// GetConnectorConfig 获取服务器配置
-func GetConnectorConfig() *ConnectorConfig {
-	return connectorConfig
+var Connector = &connector{}
+
+// InitConnectorConfig 保存服务器配置
+func InitConnectorConfig() {
+	connectorConfig := &connectorConfig{Connector: Connector}
+	viper.Unmarshal(connectorConfig)
 }

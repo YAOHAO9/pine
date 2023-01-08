@@ -130,7 +130,7 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 
 			// RPC请求消息结构体
 			rpcMsg := &message.RPCMsg{
-				From:      config.GetServerConfig().ID,
+				From:      config.Server.ID,
 				Handler:   handler,
 				Type:      message.RemoterTypeEnum.HANDLER,
 				RequestID: clientMessage.RequestID,

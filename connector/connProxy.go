@@ -58,7 +58,7 @@ func (connproxy *connProxy) notify(notify *message.PineMsg) {
 func (connproxy *connProxy) GetSession() *session.Session {
 	session := &session.Session{
 		UID:  connproxy.uid,
-		CID:  config.GetServerConfig().ID,
+		CID:  config.Server.ID,
 		Data: connproxy.data,
 	}
 	return session

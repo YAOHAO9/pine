@@ -82,7 +82,7 @@ func DelClientByID(id string) {
 }
 
 // CreateRpcClient 创建RPC连接客户端
-func CreateRpcClient(serverConfig *config.RPCServerConfig) {
+func CreateRpcClient(serverConfig *config.RPCServerStruct) {
 	defer func() {
 		data := recover()
 		if data != nil {
@@ -103,7 +103,7 @@ func CreateRpcClient(serverConfig *config.RPCServerConfig) {
 }
 
 // DelRpcClient 删除RPC连接客户端
-func DelRpcClient(serverConfig *config.RPCServerConfig) {
+func DelRpcClient(serverConfig *config.RPCServerStruct) {
 	client := GetClientByID(serverConfig.ID)
 	if client != nil && client.Conn == nil {
 		DelClientByID(serverConfig.ID)

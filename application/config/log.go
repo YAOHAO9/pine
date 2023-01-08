@@ -1,22 +1,25 @@
 package config
 
+import "github.com/spf13/viper"
+
 // ==========================================
 // LogConfig
 // ==========================================
-var logConfig *LogConfig
 
 // LogConfig 日志 配置文件
-type LogConfig struct {
+type log struct {
 	Type     string `validate:"oneof=Console File"`
 	Level    string `validate:"oneof=Debug Info Warn Error"`
 }
 
-// SetLogConfig 保存日志配置
-func SetLogConfig(lc *LogConfig) {
-	logConfig = lc
+type logConfig struct {
+	Log *log
 }
 
-// GetLogConfig 获取日志配置
-func GetLogConfig() *LogConfig {
-	return logConfig
+var Log = &log{}
+
+// InitLogConfig 保存日志配置
+func InitLogConfig() {
+	logConfig := &logConfig{Log: Log}
+	viper.Unmarshal(logConfig)
 }

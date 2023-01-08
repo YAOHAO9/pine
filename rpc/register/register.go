@@ -40,7 +40,7 @@ func numToBHex(num, n int) string {
 func Start(init chan bool) {
 
 	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   config.GetEtcdConfig().Addrs,
+		Endpoints:   config.Etcd.Addrs,
 		DialTimeout: sessionTimeout,
 	})
 	if err != nil {
@@ -50,7 +50,7 @@ func Start(init chan bool) {
 	etcdClient = client
 
 	// 服务器配置
-	serverConfig := config.GetServerConfig()
+	serverConfig := config.Server
 	session, err := concurrency.NewSession(client)
 	if err != nil {
 		logrus.Error(err)
@@ -113,7 +113,7 @@ func Start(init chan bool) {
 func initNode() {
 
 	// 服务器配置
-	serverConfig := config.GetServerConfig()
+	serverConfig := config.Server
 
 	nodePath := fmt.Sprintf("/%s/%s", serverConfig.ClusterName, serverConfig.ID)
 
@@ -146,7 +146,7 @@ func initNode() {
 func watch() {
 
 	// 服务器配置
-	serverConfig := config.GetServerConfig()
+	serverConfig := config.Server
 	zkpath := fmt.Sprint("/", serverConfig.ClusterName)
 
 	watchingCh := make(chan bool)
@@ -190,7 +190,7 @@ func watch() {
 
 func createRpcClient(data []byte) {
 	// 解析服务器信息
-	serverConfig := &config.RPCServerConfig{}
+	serverConfig := &config.RPCServerStruct{}
 	err := json.Unmarshal(data, serverConfig)
 	if err != nil {
 		logger.Error(err)
@@ -198,7 +198,7 @@ func createRpcClient(data []byte) {
 	}
 	// 创建客户端，并与该服务器连接
 	clientmanager.CreateRpcClient(serverConfig)
-	if config.GetServerConfig().IsConnector {
+	if config.Server.IsConnector {
 		// 将Server加入compressservice，生成一个对应的压缩码
 		compressservice.Server.AddRecord(serverConfig.Kind)
 	}
@@ -206,7 +206,7 @@ func createRpcClient(data []byte) {
 
 func delRpcClient(data []byte) {
 	// 解析服务器信息
-	serverConfig := &config.RPCServerConfig{}
+	serverConfig := &config.RPCServerStruct{}
 	err := json.Unmarshal(data, serverConfig)
 	if err != nil {
 		logger.Error(err)

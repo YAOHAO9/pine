@@ -11,12 +11,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-type ymlConfig struct {
-	Log       *LogConfig
-	Etcd      *EtcdConfig
-	RPCServer *RPCServerConfig
-	Connector *ConnectorConfig
-}
 
 type option struct {
 	Config string `short:"c" long:"config" description:"Config yaml path"`
@@ -55,30 +49,28 @@ func ParseConfig() {
 	}
 
 	// 保存配置
-	configYml := &ymlConfig{}
-	viper.Unmarshal(configYml)
-	SetLogConfig(configYml.Log)
-	SetEtcdConfig(configYml.Etcd)
-	SetRPCServerConfig(configYml.RPCServer)
-	SetConnectorConfig(configYml.Connector)
+	InitLogConfig()
+	InitEtcdConfig()
+	InitServerConfig()
+	InitConnectorConfig()
 
 	// 验证
-	if errs := validator.New().Struct(configYml.Log); errs != nil {
+	if errs := validator.New().Struct(Log); errs != nil {
 		logrus.Panic(errs)
 	}
-	if errs := validator.New().Struct(configYml.Etcd); errs != nil {
+	if errs := validator.New().Struct(Etcd); errs != nil {
 		logrus.Panic(errs)
 	}
-	if errs := validator.New().Struct(configYml.RPCServer); errs != nil {
+	if errs := validator.New().Struct(Server); errs != nil {
 		logrus.Panic(errs)
 	}
 
 	// 打印配置
-	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("LogConfig: %+v", configYml.Log), 0x1B)
-	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("EtcdConfig: %+v", configYml.Etcd), 0x1B)
-	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("RPCServerConfig: %+v", configYml.RPCServer), 0x1B)
-	if configYml.Connector != nil && configYml.Connector.Port != 0 {
-		fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("ConnectorConfig: %+v", configYml.Etcd), 0x1B)
+	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("LogConfig: %+v", Log), 0x1B)
+	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("EtcdConfig: %+v", Etcd), 0x1B)
+	fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("RPCServerConfig: %+v", Server), 0x1B)
+	if Connector != nil && Connector.Port != 0 {
+		fmt.Printf("%c[%dm%s%c[m\n", 0x1B, 0x23, fmt.Sprintf("ConnectorConfig: %+v", Etcd), 0x1B)
 	}
 
 }
