@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
-
 
 type option struct {
 	Config string `short:"c" long:"config" description:"Config yaml path"`
@@ -21,6 +21,10 @@ func ParseConfig() {
 	var opt option
 	flags.Parse(&opt)
 
+	if opt.Config == "" {
+		opt.Config = os.Getenv("CONFIG")
+	}
+
 	viper.SetConfigType("yaml")
 	if opt.Config != "" {
 		dir, file := filepath.Split(opt.Config)
@@ -28,7 +32,7 @@ func ParseConfig() {
 		viper.AddConfigPath(dir)
 		ext := filepath.Ext(file)
 		// 设置配置文件名称
-		viper.SetConfigName(file[0:len(file)-len(ext)])
+		viper.SetConfigName(file[0 : len(file)-len(ext)])
 		// 设置配置文件类型
 		viper.SetConfigType(ext[1:])
 	} else {
@@ -36,7 +40,6 @@ func ParseConfig() {
 		viper.SetConfigName("config")
 	}
 	viper.AddConfigPath(".")
-	
 
 	err := viper.ReadInConfig()
 
