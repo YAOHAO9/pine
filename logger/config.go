@@ -71,12 +71,30 @@ func (err *CustomError) Error() string {
 	return err.Msg
 }
 
+// 合并自定义错误
+func (err *CustomError) Merge(restArgs ...interface{}) *CustomError {
+	msg := fmt.Sprint(err.Msg, fmt.Sprint(restArgs...))
+
+	entry := std.WithError(errors.New(msg))
+	entry.Data["RealStack"] = err.Entry.Data["RealStack"]
+
+	return &CustomError{
+		Msg:   msg,
+		Args:  append(err.Args, restArgs...),
+		Entry: entry,
+	}
+}
+
 // NewError
 func NewError(args ...interface{}) error {
 
 	if len(args) == 1 {
 		if customError, ok := args[0].(*CustomError); ok {
 			return customError
+		}
+	} else {
+		if customError, ok := args[0].(*CustomError); ok {
+			return customError.Merge(args[1:]...)
 		}
 	}
 
