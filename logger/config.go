@@ -71,6 +71,12 @@ func (err *CustomError) Error() string {
 	return err.Msg
 }
 
+// 添加数据函数
+func (err *CustomError) AddData(key string, value interface{}) *CustomError {
+	err.Data[key] = value
+	return err
+}
+
 // 合并自定义错误
 func (err *CustomError) Merge(restArgs ...interface{}) *CustomError {
 	msg := fmt.Sprint(err.Msg, fmt.Sprint(restArgs...))
