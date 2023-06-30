@@ -92,7 +92,7 @@ func (err *CustomError) Merge(restArgs ...interface{}) *CustomError {
 }
 
 // NewError
-func NewError(args ...interface{}) error {
+func NewError(args ...interface{}) *CustomError {
 
 	if len(args) == 1 {
 		if customError, ok := args[0].(*CustomError); ok {
