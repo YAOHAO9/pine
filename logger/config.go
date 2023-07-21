@@ -79,16 +79,10 @@ func (err *CustomError) AddData(key string, value interface{}) *CustomError {
 
 // 合并自定义错误
 func (err *CustomError) Merge(restArgs ...interface{}) *CustomError {
-	msg := fmt.Sprint(err.Msg, fmt.Sprint(restArgs...))
-
-	entry := std.WithError(errors.New(msg))
-	entry.Data["RealStack"] = err.Entry.Data["RealStack"]
-
-	return &CustomError{
-		Msg:   msg,
-		Args:  append(err.Args, restArgs...),
-		Entry: entry,
-	}
+	err.Msg = fmt.Sprint(err.Msg, fmt.Sprint(restArgs...))
+	err.Args = append(err.Args, restArgs...)
+	err.Data["error"] = err.Msg
+	return err
 }
 
 // NewError
