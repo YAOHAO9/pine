@@ -6,10 +6,12 @@ import (
 	"strconv"
 	"time"
 
+	
+
 	"github.com/YAOHAO9/pine/application"
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
-	wsconnector "github.com/YAOHAO9/pine/connector/ws"
+	"github.com/YAOHAO9/pine/connector/wsconnector"
 	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"

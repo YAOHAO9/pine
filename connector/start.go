@@ -15,25 +15,6 @@ import (
 	"github.com/YAOHAO9/pine/service/compressservice"
 )
 
-type Options struct {
-	authFn  func(uid, token string, sessionData map[string]string) error
-	closeFn func(session *session.Session, err error)
-}
-
-type Option func(o *Options)
-
-func WithOnConnectFn(authFn func(uid, token string, initSessionData map[string]string) error) Option {
-	return func(o *Options) {
-		o.authFn = authFn
-	}
-}
-
-func WithOnCloseFn(closeFn func(session *session.Session, err error)) Option {
-	return func(o *Options) {
-		o.closeFn = closeFn
-	}
-}
-
 func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 
 	options := &Options{}
@@ -43,8 +24,8 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 	}
 
 	// 设置默认的连接认证函数
-	if options.authFn == nil {
-		options.authFn = func(uid, token string, initSessionData map[string]string) error {
+	if options.authCb == nil {
+		options.authCb = func(uid, token string, initSessionData map[string]string) error {
 
 			if uid == "" {
 				return logger.NewError(`uid can't be ""`)
@@ -55,8 +36,8 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 	}
 
 	// 设置默认的连接关闭函数
-	if options.closeFn == nil {
-		options.closeFn = func(session *session.Session, err error) {
+	if options.closeCb == nil {
+		options.closeCb = func(session *session.Session, err error) {
 			logger.Error(err)
 		}
 	}
@@ -68,10 +49,10 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 	compressservice.Event.AddRecord(ConnectorHandlerMap.Kick)
 
 	// 客户端连接后发起的回调函数
-	connectorPlugin.OnConnect(func(uid, token string, pluginConn PluginConn) error {
+	connectorPlugin.OnConnect(func(uid, token string, pluginConnection Connection) error {
 		// 认证
 		sessionData := make(map[string]string)
-		err := options.authFn(uid, token, sessionData)
+		err := options.authCb(uid, token, sessionData)
 		if err != nil {
 			return err
 		}
@@ -84,7 +65,7 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 		// 保存连接信息
 		connproxy := &connProxy{
 			uid:            uid,
-			conn:           pluginConn,
+			conn:           pluginConnection,
 			data:           sessionData,
 			routeRecord:    make(map[string]string),
 			compressRecord: make(map[string]bool),
@@ -92,14 +73,14 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 		SaveConnProxy(connproxy)
 
 		// 断开连接自动清除连接信息
-		pluginConn.OnClose(func(err error) {
+		pluginConnection.OnClose(func(err error) {
 			DelConnProxy(uid)
 			session := connproxy.GetSession()
-			options.closeFn(session, err)
+			options.closeCb(session, err)
 		})
 
 		// 接收消息
-		pluginConn.OnReceiveMsg(func(data []byte) {
+		pluginConnection.OnReceiveMsg(func(data []byte) {
 			// 解析消息
 			clientMessage := &message.PineMsg{}
 			err := serializer.FromBytes(data, clientMessage)
@@ -192,6 +173,6 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 		return nil
 	})
 
-	go connectorPlugin.Start()
+	go connectorPlugin.Listen()
 
 }

@@ -1,8 +1,8 @@
 package main
 
 import (
+	"connector/handlermessage"
 	"fmt"
-	"game1/handlermessage"
 	_ "net/http/pprof"
 	"strconv"
 	"time"
@@ -10,7 +10,7 @@ import (
 	"github.com/YAOHAO9/pine/application"
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
-	wsconnector "github.com/YAOHAO9/pine/connector/ws"
+	"github.com/YAOHAO9/pine/connector/wsconnector"
 	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc"
 	"github.com/YAOHAO9/pine/rpc/client"
@@ -29,7 +29,7 @@ func main() {
 
 	connector.Start(
 		wsconnector.New(config.Connector.Port),
-		func(uid string, token string, sessionData map[string]string) error {
+		connector.WithOnConnectFn(func(uid string, token string, sessionData map[string]string) error {
 
 			if uid == "" || token == "" {
 				return logger.NewError("invalid token")
@@ -38,7 +38,8 @@ func main() {
 			sessionData[token] = token
 
 			return nil
-		})
+		}),
+	)
 
 	app.RegisteHandler("handler", func(rpcCtx *context.RPCCtx, data *handlermessage.Handler) {
 
@@ -141,7 +142,7 @@ func main() {
 	app.RegisteRouter("ddz", func(rpcMsg *message.RPCMsg, clients []*client.RPCClient) *client.RPCClient {
 
 		for _, clientInfo := range clients {
-			if chatServerID, ok := rpcMsg.Session.Get("chatServerID").(string); ok && clientInfo.ServerConfig.ID == chatServerID {
+			if chatServerID, ok := rpcMsg.Session.Get("chatServerID"); ok && clientInfo.ServerConfig.ID == chatServerID {
 				return clientInfo
 			}
 		}

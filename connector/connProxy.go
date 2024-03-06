@@ -13,7 +13,7 @@ import (
 // connProxy 用户连接信息
 type connProxy struct {
 	uid            string
-	conn           PluginConn
+	conn           Connection
 	data           map[string]string
 	routeRecord    map[string]string
 	compressRecord map[string]bool
