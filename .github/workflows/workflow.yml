@@ -18,5 +18,5 @@ jobs:
           git config --global user.name "過愘"
           git config --global user.email "986403268@qq.com"
           git remote add gitee https://oauth2:${{ secrets.GITEE_ACCESS_TOKEN }}@gitee.com/yaohao9/pine.git
-          git pull gitee
+          git pull gitee ${{ github.ref }}
           git push gitee ${{ github.ref }}
