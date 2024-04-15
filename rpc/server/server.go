@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -31,7 +30,7 @@ var upgrader = websocket.Upgrader{
 
 // Start rpc server
 func Start(startCh chan bool) {
-	registerProtoHandler()
+	registeProtoHandler()
 
 	init := make(chan bool)
 	go register.Start(init)
@@ -95,7 +94,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 		switch rpcMsg.Type {
 		case message.RemoterTypeEnum.HANDLER:
-			ok := clienthandler.Manager.Exec(rpcCtx)
+			ok := clienthandler.Exec(rpcCtx)
 			if !ok {
 				if rpcCtx.GetRequestID() == 0 {
 					logger.Warn(fmt.Sprintf("NotifyHandler(%v)不存在", rpcCtx.GetHandler()))
@@ -105,7 +104,7 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case message.RemoterTypeEnum.REMOTER:
-			ok := serverhandler.Manager.Exec(rpcCtx)
+			ok := serverhandler.Exec(rpcCtx)
 			if !ok {
 				if rpcCtx.GetRequestID() == 0 {
 					logger.Warn(fmt.Sprintf("NotifyRemoter(%v)不存在", rpcCtx.GetHandler()))
@@ -126,11 +125,11 @@ func checkFileIsExist(filename string) bool {
 	return true
 }
 
-func registerProtoHandler() {
+func registeProtoHandler() {
 	var serverProtoCentent []byte
 
 	// 获取数据压缩元数据
-	clienthandler.Manager.Register("__CompressMetadata__", func(rpcCtx *context.RPCCtx, hash string) {
+	clienthandler.Register("__CompressMetadata__", func(rpcCtx *context.RPCCtx, hash string) {
 		pwd, _ := os.Getwd()
 
 		serverProto := path.Join(pwd, "/proto/server.proto")
@@ -140,7 +139,7 @@ func registerProtoHandler() {
 		// server proto
 		if serverProtoCentent == nil && checkFileIsExist(serverProto) {
 			var err error
-			serverProtoCentent, err = ioutil.ReadFile(serverProto)
+			serverProtoCentent, err = os.ReadFile(serverProto)
 
 			if err != nil {
 				logger.Error(err)

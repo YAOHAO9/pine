@@ -32,7 +32,7 @@ var ConnectorHandlerMap = struct {
 func registerConnectorHandler() {
 
 	// 更新Session
-	serverhandler.Manager.Register(ConnectorHandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
+	serverhandler.Register(ConnectorHandlerMap.UpdateSession, func(rpcCtx *context.RPCCtx, data map[string]string) {
 		if rpcCtx.Session == nil {
 			logger.Error("Session 为 nil")
 			return
@@ -58,7 +58,7 @@ func registerConnectorHandler() {
 	})
 
 	// 推送消息
-	serverhandler.Manager.Register(ConnectorHandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
+	serverhandler.Register(ConnectorHandlerMap.PushMessage, func(rpcCtx *context.RPCCtx, data *message.PineMsg) {
 		connproxy := GetConnProxy(rpcCtx.Session.UID)
 		if connproxy == nil {
 			logger.Warn("无效的UID(", rpcCtx.Session.UID, ")没有找到对应的客户端连接")
@@ -77,12 +77,12 @@ func registerConnectorHandler() {
 	})
 
 	// 获取路由记录
-	serverhandler.Manager.Register(ConnectorHandlerMap.RouterRecords, func(rpcCtx *context.RPCCtx, hash []string) {
+	serverhandler.Register(ConnectorHandlerMap.RouterRecords, func(rpcCtx *context.RPCCtx, hash []string) {
 		logger.Warn(hash)
 	})
 
 	// 获取Session
-	serverhandler.Manager.Register(ConnectorHandlerMap.GetSession, func(rpcCtx *context.RPCCtx, data struct {
+	serverhandler.Register(ConnectorHandlerMap.GetSession, func(rpcCtx *context.RPCCtx, data struct {
 		CID string
 		UID string
 	}) {
@@ -98,19 +98,19 @@ func registerConnectorHandler() {
 	})
 
 	// 踢下线
-	serverhandler.Manager.Register(ConnectorHandlerMap.Kick, func(rpcCtx *context.RPCCtx, data []byte) {
+	serverhandler.Register(ConnectorHandlerMap.Kick, func(rpcCtx *context.RPCCtx, data []byte) {
 		KickByUid(rpcCtx.Session.UID, data)
 	})
 
 	// 广播
-	serverhandler.Manager.Register(ConnectorHandlerMap.BroadCast, func(rpcCtx *context.RPCCtx, notify *message.PineMsg) {
+	serverhandler.Register(ConnectorHandlerMap.BroadCast, func(rpcCtx *context.RPCCtx, notify *message.PineMsg) {
 		for _, connproxy := range connProxyStore {
 			connproxy.notify(notify)
 		}
 	})
 
 	// 获取serverCode
-	serverhandler.Manager.Register(ConnectorHandlerMap.ServerCode, func(rpcCtx *context.RPCCtx) {
+	serverhandler.Register(ConnectorHandlerMap.ServerCode, func(rpcCtx *context.RPCCtx) {
 		client := clientmanager.GetClientByID(rpcCtx.From)
 
 		if client != nil {

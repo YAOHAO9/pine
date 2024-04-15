@@ -48,8 +48,8 @@ type RPCClient struct {
 	mutex        sync.Mutex
 }
 
-// SendMsg 发送消息
-func (client *RPCClient) SendMsg(bytes []byte) {
+// sendMsg 发送消息
+func (client *RPCClient) sendMsg(bytes []byte) {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
 	if client.Conn == nil {
@@ -60,8 +60,7 @@ func (client *RPCClient) SendMsg(bytes []byte) {
 
 // SendRPCNotify 发送RPC通知
 func (client *RPCClient) SendRPCNotify(rpcMsg *message.RPCMsg) {
-
-	client.SendMsg(serializer.ToBytes(rpcMsg))
+	client.sendMsg(serializer.ToBytes(rpcMsg))
 }
 
 // SendRPCRequest 发送RPC请求
@@ -73,7 +72,7 @@ func (client *RPCClient) SendRPCRequest(rpcMsg *message.RPCMsg, cb interface{}) 
 	requestMap[*rpcMsg.RequestID] = cb
 	requestMapLock.Unlock()
 
-	client.SendMsg(serializer.ToBytes(rpcMsg))
+	client.sendMsg(serializer.ToBytes(rpcMsg))
 
 	// go time.AfterFunc(time.Minute, func() {
 	// 	requestMapLock.RLock()
@@ -94,14 +93,14 @@ func (client *RPCClient) CreateConn() {
 
 	sessionTimeout := time.Second * 3
 
-	serverConfig := client.ServerConfig
+	destServerConfig := client.ServerConfig
 	// Dialer
 	dialer := websocket.Dialer{}
 	urlString := url.URL{
 		Scheme:   "ws",
-		Host:     fmt.Sprint(serverConfig.Host, ":", serverConfig.Port),
+		Host:     fmt.Sprint(destServerConfig.Host, ":", destServerConfig.Port),
 		Path:     "/rpc",
-		RawQuery: fmt.Sprint("token=", serverConfig.Token),
+		RawQuery: fmt.Sprint("token=", destServerConfig.Token),
 	}
 
 	var e error
@@ -124,7 +123,7 @@ func (client *RPCClient) CreateConn() {
 
 	if tryTimes >= maxTryTimes {
 		// 操过最大尝试次数则报错
-		logger.Panic(fmt.Sprint("Cannot create connection with ", serverConfig.ID))
+		logger.Panic(fmt.Sprint("Cannot create connection with ", destServerConfig.ID))
 	}
 
 	// 如果超过最大尝试次数，任然有错则报错
@@ -133,7 +132,7 @@ func (client *RPCClient) CreateConn() {
 	}
 
 	// 连接成功！！！
-	logger.Info("连接到", serverConfig.ID, "成功！！！")
+	logger.Info("连接到", destServerConfig.ID, "成功！！！")
 
 	// 接收消息
 	go func() {
@@ -143,8 +142,9 @@ func (client *RPCClient) CreateConn() {
 			if err != nil {
 				clientConn.Close()
 				clientConn.CloseHandler()(0, "")
-				client.CloseFn(serverConfig.ID)
-				logger.Warn("服务", serverConfig.ID, "掉线")
+				client.CloseFn(destServerConfig.ID)
+				logger.Warn(fmt.Sprintf("%s->%s Ws链接断开", config.Server.ID, destServerConfig.ID))
+				client.Conn = nil
 				break
 			}
 			// 解析消息

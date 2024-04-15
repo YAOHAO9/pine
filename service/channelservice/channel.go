@@ -52,7 +52,6 @@ func (channel Channel) PushMessageToUsers(uids []string, event string, data inte
 	for _, uid := range uids {
 		channel.PushMessageToUser(uid, event, data)
 	}
-
 }
 
 // PushMessageToUser 推送消息给指定玩家
@@ -64,7 +63,6 @@ func (channel Channel) PushMessageToUser(uid string, event string, data interfac
 	}
 
 	PushMessageBySession(session, event, data)
-
 }
 
 // Add

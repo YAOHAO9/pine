@@ -23,14 +23,14 @@ type ClientHandler struct {
 }
 
 // Manager return RPCHandler
-var Manager = &ClientHandler{
+var clientHandler = &ClientHandler{
 	Handler: &handler.Handler{
 		Map: make(handler.Map),
 	},
 }
 
 // Register remoter
-func (clienthandler *ClientHandler) Register(handlerName string, handlerFunc interface{}) {
+func Register(handlerName string, handlerFunc interface{}) {
 
 	handlerType := reflect.TypeOf(handlerFunc)
 	if handlerType.Kind() != reflect.Func {
@@ -100,7 +100,12 @@ func (clienthandler *ClientHandler) Register(handlerName string, handlerFunc int
 	}
 
 	compressservice.Handler.AddHandlerRecord(handlerName)
-	clienthandler.Handler.Register(handlerName, handlerFunc)
+	clientHandler.Register(handlerName, handlerFunc)
+}
+
+// Exec
+func Exec(rpcCtx *context.RPCCtx) bool {
+	return clientHandler.Exec(rpcCtx)
 }
 
 // 检查参数是否handler参数与proto中定义的一致

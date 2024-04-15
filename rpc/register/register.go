@@ -58,10 +58,12 @@ func Start(init chan bool) {
 	}
 	defer session.Close()
 
+	// 获取一个全局锁
 	locker := concurrency.NewLocker(session, fmt.Sprintf("/%s", serverConfig.Kind))
 	locker.Lock()
 	defer locker.Unlock()
 
+	// 自动生成ID
 	if serverConfig.ID == "" {
 		getRsp, err := client.Get(context.TODO(), fmt.Sprintf("/%s/%s", serverConfig.ClusterName, serverConfig.Kind), clientv3.WithPrefix())
 		if err != nil {
@@ -85,9 +87,8 @@ func Start(init chan bool) {
 		}
 	}
 
-	//获取一个没有被占用的端口
+	// 自动获取一个没有被占用的端口
 	if serverConfig.Port == 0 {
-
 		for port := 3000; port < 65535; port++ {
 			tcp, err := net.DialTCP("tcp", nil, &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: port})
 			if err != nil {
@@ -98,7 +99,6 @@ func Start(init chan bool) {
 				tcp.Close()
 			}
 		}
-
 	}
 
 	init <- true
@@ -131,7 +131,13 @@ func initNode() {
 
 	go func() {
 		for {
-			<-keepalive
+			time.Sleep(time.Second)
+			resp := <-keepalive
+			if resp == nil {
+				// 断线重新注册节点
+				initNode()
+				return
+			}
 		}
 	}()
 
@@ -157,17 +163,11 @@ func watch() {
 			for res := range watchCh {
 
 				event := res.Events[0]
-
 				switch event.Type {
 				case mvccpb.PUT:
-					{
-						createRpcClient(event.Kv.Value)
-					}
-
+					createRpcClient(event.Kv.Value)
 				case mvccpb.DELETE:
-					{
-						delRpcClient(event.PrevKv.Value)
-					}
+					delRpcClient(event.PrevKv.Value)
 				}
 
 			}
@@ -185,7 +185,6 @@ func watch() {
 	for _, kv := range getRsp.Kvs {
 		createRpcClient(kv.Value)
 	}
-
 }
 
 func createRpcClient(data []byte) {
@@ -196,6 +195,7 @@ func createRpcClient(data []byte) {
 		logger.Error(err)
 		return
 	}
+	logger.Warn(fmt.Sprintf("检测到%s服务", serverConfig.ID))
 	// 创建客户端，并与该服务器连接
 	clientmanager.CreateRpcClient(serverConfig)
 	if config.Server.IsConnector {
@@ -212,6 +212,7 @@ func delRpcClient(data []byte) {
 		logger.Error(err)
 		return
 	}
+	logger.Warn(fmt.Sprintf("%s服务断开链接", serverConfig.ID))
 	// 删除连接
 	clientmanager.DelRpcClient(serverConfig)
 }
