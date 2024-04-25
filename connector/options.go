@@ -9,13 +9,13 @@ type Options struct {
 
 type Option func(o *Options)
 
-func WithOnConnectFn(authFn func(uid, token string, initSessionData map[string]string) error) Option {
+func WithOnAuthConnFn(authFn func(uid, token string, initSessionData map[string]string) error) Option {
 	return func(o *Options) {
 		o.authCb = authFn
 	}
 }
 
-func WithOnCloseFn(closeFn func(session *session.Session, err error)) Option {
+func WithOnCloseConnFn(closeFn func(session *session.Session, err error)) Option {
 	return func(o *Options) {
 		o.closeCb = closeFn
 	}

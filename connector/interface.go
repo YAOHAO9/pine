@@ -4,7 +4,7 @@ type Connection interface {
 	SendMsg(bytes []byte) error
 	OnReceiveMsg(func(bytes []byte))
 	OnClose(func(err error))
-	Close()
+	Close(err error)
 }
 
 type ConnectorPlugin interface {

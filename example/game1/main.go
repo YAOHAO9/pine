@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	
-
 	"github.com/YAOHAO9/pine/application"
 	"github.com/YAOHAO9/pine/application/config"
 	"github.com/YAOHAO9/pine/connector"
@@ -32,7 +30,7 @@ func main() {
 
 	app.RegisteConnector(
 		wsconnector.New(config.Connector.Port),
-		connector.WithOnConnectFn(func(uid string, tokenStr string, sessionData map[string]string) error {
+		connector.WithOnAuthConnFn(func(uid string, tokenStr string, sessionData map[string]string) error {
 
 			if uid == "" || tokenStr == "" {
 				return logger.NewError("invalid token")
@@ -41,11 +39,11 @@ func main() {
 			return nil
 		}),
 
-		connector.WithOnCloseFn(func(session *session.Session, err error) {
+		connector.WithOnCloseConnFn(func(session *session.Session, err error) {
 
 			serverId, exists := session.Get("PlayingServer")
 			if !exists {
-				logger.Warn("没有正在进行中的游戏")
+				logger.Debug("没有正在进行中的游戏")
 				return
 			}
 

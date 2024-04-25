@@ -104,9 +104,8 @@ func Start(init chan bool) {
 	init <- true
 	// 初始化节点
 	initNode()
-
 	// 监听节点变化
-	watch()
+	go watch()
 }
 
 // 初始化节点
@@ -114,7 +113,6 @@ func initNode() {
 
 	// 服务器配置
 	serverConfig := config.Server
-
 	nodePath := fmt.Sprintf("/%s/%s", serverConfig.ClusterName, serverConfig.ID)
 
 	leaseRsp, err := etcdClient.Grant(context.TODO(), 5)
@@ -141,49 +139,43 @@ func initNode() {
 		}
 	}()
 
+	// 注册当前节点信息
 	_, err = etcdClient.Put(context.TODO(), nodePath, string(serializer.ToBytes(serverConfig)), clientv3.WithLease(leaseRsp.ID))
 	if err != nil {
 		logger.Error(err)
 		return
 	}
 
-}
-
-func watch() {
-
-	// 服务器配置
-	serverConfig := config.Server
+	// 获取已有节点信息
 	zkpath := fmt.Sprint("/", serverConfig.ClusterName)
-
-	watchingCh := make(chan bool)
-	go func() {
-		watchCh := etcdClient.Watch(context.TODO(), zkpath, clientv3.WithPrefix(), clientv3.WithPrevKV())
-		watchingCh <- true
-		for {
-			for res := range watchCh {
-
-				event := res.Events[0]
-				switch event.Type {
-				case mvccpb.PUT:
-					createRpcClient(event.Kv.Value)
-				case mvccpb.DELETE:
-					delRpcClient(event.PrevKv.Value)
-				}
-
-			}
-		}
-	}()
-
-	<-watchingCh
-
 	getRsp, err := etcdClient.Get(context.TODO(), zkpath, clientv3.WithPrefix())
 	if err != nil {
 		logger.Error(err)
 		return
 	}
-
 	for _, kv := range getRsp.Kvs {
 		createRpcClient(kv.Value)
+	}
+
+}
+
+// 监听节点信息变化
+func watch() {
+	// 服务器配置
+	zkpath := fmt.Sprint("/", config.Server.ClusterName)
+	watchCh := etcdClient.Watch(context.TODO(), zkpath, clientv3.WithPrefix(), clientv3.WithPrevKV())
+	for {
+		for res := range watchCh {
+
+			event := res.Events[0]
+			switch event.Type {
+			case mvccpb.PUT:
+				createRpcClient(event.Kv.Value)
+			case mvccpb.DELETE:
+				delRpcClient(event.PrevKv.Value)
+			}
+
+		}
 	}
 }
 
@@ -195,7 +187,7 @@ func createRpcClient(data []byte) {
 		logger.Error(err)
 		return
 	}
-	logger.Warn(fmt.Sprintf("检测到%s服务", serverConfig.ID))
+	logger.Warn(fmt.Sprintf("检测到微服务:%s", serverConfig.ID))
 	// 创建客户端，并与该服务器连接
 	clientmanager.CreateRpcClient(serverConfig)
 	if config.Server.IsConnector {
@@ -212,7 +204,7 @@ func delRpcClient(data []byte) {
 		logger.Error(err)
 		return
 	}
-	logger.Warn(fmt.Sprintf("%s服务断开链接", serverConfig.ID))
+	logger.Warn(fmt.Sprintf("微服务:%s断开连接", serverConfig.ID))
 	// 删除连接
 	clientmanager.DelRpcClient(serverConfig)
 }

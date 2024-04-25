@@ -11,25 +11,23 @@ type wsConnection struct {
 }
 
 // 发送消息
-func (conn *wsConnection) SendMsg(bytes []byte) error {
-	return conn.ws.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
+func (wsConn *wsConnection) SendMsg(bytes []byte) error {
+	return wsConn.ws.WriteMessage(message.TypeEnum.BinaryMessage, bytes)
 }
 
 // 关闭连接
-func (conn *wsConnection) Close() {
-	conn.ws.Close()
+func (wsConn *wsConnection) Close(err error) {
+	wsConn.ws.Close()
+	wsConn.closeCb(err)
 }
 
 // 设置接收消息函数
-func (conn *wsConnection) OnReceiveMsg(receiverMsgCb func(bytes []byte)) {
+func (wsConn *wsConnection) OnReceiveMsg(receiverMsgCb func(bytes []byte)) {
 	// 开始接收消息
 	for {
-		_, data, err := conn.ws.ReadMessage()
+		_, data, err := wsConn.ws.ReadMessage()
 		if err != nil {
-			if conn.closeCb != nil {
-				conn.closeCb(err)
-			}
-			conn.ws.CloseHandler()(0, err.Error())
+			wsConn.Close(err)
 			break
 		}
 

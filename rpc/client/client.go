@@ -143,7 +143,7 @@ func (client *RPCClient) CreateConn() {
 				clientConn.Close()
 				clientConn.CloseHandler()(0, "")
 				client.CloseFn(destServerConfig.ID)
-				logger.Warn(fmt.Sprintf("%s->%s Ws链接断开", config.Server.ID, destServerConfig.ID))
+				logger.Warn(fmt.Sprintf("%s->%s Ws连接断开", config.Server.ID, destServerConfig.ID))
 				client.Conn = nil
 				break
 			}

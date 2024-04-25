@@ -16,8 +16,8 @@ func New(port uint32) connector.ConnectorPlugin {
 }
 
 type wsConnectorPlugin struct {
-	port      uint32
-	onConnectCb func(uid, token string, conn connector.Connection) error
+	port     uint32
+	onAuthCb func(uid, token string, conn connector.Connection) error
 }
 
 func (wsConnPlugin *wsConnectorPlugin) Listen() {
@@ -44,31 +44,23 @@ func (wsConnPlugin *wsConnectorPlugin) Listen() {
 			return
 		}
 
-		// 断开连接自动清除连接信息
-		conn.SetCloseHandler(func(code int, text string) error {
-			conn.Close()
-			logger.Warn(fmt.Sprintf("Code:%d, CloseMsg:%s, UID:%s, TOKEN:%s", code, text, uid, token))
-			return nil
-		})
-
 		// 连接信息
 		wsConn := &wsConnection{
 			ws: conn,
 		}
 
 		// 调用连接Callback
-		if err = wsConnPlugin.onConnectCb(uid, token, wsConn); err != nil {
-			conn.Close()
+		if err = wsConnPlugin.onAuthCb(uid, token, wsConn); err != nil {
+			wsConn.Close(logger.NewError(err))
 		}
 	})
 
 	logger.Info("Connector server started ws://0.0.0.0:" + fmt.Sprint(wsConnPlugin.port))
 	// 开启并监听
 	err := http.ListenAndServe(":"+fmt.Sprint(wsConnPlugin.port), connectorServer)
-
 	logger.Error("Connector server start fail: ", err.Error())
 }
 
 func (ws *wsConnectorPlugin) OnConnect(cb func(uid, token string, conn connector.Connection) error) {
-	ws.onConnectCb = cb
+	ws.onAuthCb = cb
 }

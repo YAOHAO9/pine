@@ -2,6 +2,7 @@ package connector
 
 import (
 	"github.com/YAOHAO9/pine/application/config"
+	"github.com/YAOHAO9/pine/logger"
 	"github.com/YAOHAO9/pine/rpc/message"
 	"github.com/YAOHAO9/pine/service/compressservice"
 )
@@ -41,5 +42,5 @@ func KickByUid(uid string, data []byte) {
 	}
 	connproxy.notify(notify)
 	DelConnProxy(connproxy.uid)
-	connproxy.conn.Close()
+	connproxy.conn.Close(logger.NewError("KickByUid").AddData("Uid", uid))
 }
