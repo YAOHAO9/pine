@@ -57,11 +57,6 @@ func Start(connectorPlugin ConnectorPlugin, opts ...Option) {
 			return err
 		}
 
-		// 防止重复连接
-		if oldConnProxy := GetConnProxy(uid); oldConnProxy != nil {
-			oldConnProxy.conn.Close(logger.NewError("Duplicate connection").AddData("Uid", uid))
-		}
-
 		// 保存连接信息
 		connproxy := &connProxy{
 			uid:            uid,

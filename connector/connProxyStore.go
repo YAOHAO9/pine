@@ -42,5 +42,5 @@ func KickByUid(uid string, data []byte) {
 	}
 	connproxy.notify(notify)
 	DelConnProxy(connproxy.uid)
-	connproxy.conn.Close(logger.NewError("KickByUid").AddData("Uid", uid))
+	connproxy.conn.Close(logger.NewError(string(data)).AddData("Uid", uid))
 }

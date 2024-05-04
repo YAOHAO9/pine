@@ -63,3 +63,8 @@ func (connproxy *connProxy) GetSession() *session.Session {
 	}
 	return session
 }
+
+
+func (connproxy *connProxy) Close(err error)  {
+	connproxy.conn.Close(err)
+}
